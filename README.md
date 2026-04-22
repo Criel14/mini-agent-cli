@@ -12,25 +12,6 @@
 * TypeScript
 * Node.js
 
-# 项目结构
-
-```
-mini-cli-agent/
-├── src/
-│   ├── index.ts        # 入口（CLI）
-│   ├── agent.ts        # Agent 核心循环
-│   ├── llm.ts          # 调用大模型
-│   ├── tools/          # 工具系统
-│   │   ├── readFile.ts
-│   │   ├── writeFile.ts
-│   │   └── exec.ts
-│   ├── parser.ts       # 解析模型输出
-│   └── memory.ts       # 上下文管理
-├── package.json
-├── tsconfig.json
-└── .env
-```
-
 # 启动
 
 ```bash

@@ -11,7 +11,7 @@ const rl = readline.createInterface({
  * 获取用户输入并处理
  */
 const ask = (): void => {
-    rl.question("> ", handleInput);
+    rl.question("[user]:", handleInput);
 };
 
 /**
@@ -21,8 +21,12 @@ const ask = (): void => {
  */
 const handleInput = async (input: string): Promise<void> => {
     // 执行 agent，打印响应结果
-    const result = await runAgent(input);
-    console.log("llm:", result);
+    try {
+        const result = await runAgent(input);
+        console.log("[llm]:", result);
+    } catch (err) {
+        console.error("[error]: ", err);
+    }
 
     // 递归调用，执行下一个问题
     ask();
