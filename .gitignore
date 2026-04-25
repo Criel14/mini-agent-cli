@@ -5,6 +5,7 @@ node_modules
 dist
 *.local
 release
+.env
 .env.*
 !.env.example
 

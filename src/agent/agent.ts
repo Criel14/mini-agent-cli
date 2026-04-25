@@ -3,6 +3,7 @@
  */
 import type { DeepSeekChatCompletionResponse } from "../llm/llm-response-types.js";
 import { callLLM } from "../llm/llm.js";
+import type { Memory } from "../memory/memory.js";
 import { toolMap } from "../tools/tool-registry.js";
 import type { AgentAction } from "./agent-types.js";
 
@@ -46,18 +47,17 @@ export function parseDeepSeekResponse(
  * @param input 用户输入
  * @returns 异步的响应结果
  */
-export const runAgent = async (input: string): Promise<string> => {
+export const runAgent = async (memory: Memory): Promise<string> => {
     const MAX_STEPS = 30; // 循环的最大次数
     let step = 0;
-    let currentInput = input;
-
     // Agent 调用循环
     while (true) {
         // 调用 LLM
-        const response = await callLLM(currentInput);
+        const response = await callLLM(memory);
         const action = parseDeepSeekResponse(response);
 
-        if (action.type === "tool") { // // 工具调用
+        // 工具调用
+        if (action.type === "tool") {
             // 获取工具
             const tool = toolMap.get(action.toolName);
             if (!tool) {
@@ -65,17 +65,33 @@ export const runAgent = async (input: string): Promise<string> => {
             }
 
             // 调用工具
-            const toolResult = tool.impl(action.toolArgs)
+            const toolResult = await tool.impl(action.toolArgs)
 
-            // TODO 封装结果
-        } else if (action.type === "final") { // 最终回复
-            return action.content;
+            // 工具结果写入会话记忆
+            memory.add({
+                role: "tool",
+                content: toolResult,
+                tool_call_id: action.toolCallId,
+            });
+
+            // 限制循环的最大次数
+            step++;
+            if (step > MAX_STEPS) {
+                throw new Error("Agent Loop 达到循环上限")
+            }
+
+            continue;
         }
 
-        // 限制循环的最大次数
-        step++;
-        if (step > MAX_STEPS) {
-            throw new Error("Agent Loop 达到循环上限")
+        // 最终回复
+        if (action.type === "final") {
+            // 最终结果写入会话记忆
+            memory.add({
+                role: "assistant",
+                content: action.content,
+            });
+
+            return action.content;
         }
     }
 }
