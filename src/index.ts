@@ -1,5 +1,5 @@
 import readline from "node:readline";
-import { runAgent } from "./agent.js";
+import { runAgent } from "./agent/agent.js";
 
 // 创建控制台监听
 const rl = readline.createInterface({
