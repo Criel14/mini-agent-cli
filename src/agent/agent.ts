@@ -24,13 +24,14 @@ export function parseDeepSeekResponse(
     const msg = choice.message;
 
     // 判断是否函数调用，关于这里的"?."运算符：如果前面的值是 null 或 undefined，就直接返回 undefined，不会报错
-    const call = msg.tool_calls?.[0];
+    const call = msg.tool_calls?.[0]; // TODO 可能要处理多个函数调用的情况
     if (call) {
         return {
             type: "tool",
             toolName: call.function.name,
             toolArgs: JSON.parse(call.function.arguments), // 格式化请求参数
             toolCallId: call.id,
+            assistantMessage: msg,
         };
     }
 
@@ -38,6 +39,7 @@ export function parseDeepSeekResponse(
     return {
         type: "final",
         content: msg.content ?? "", // "??"运算表示：如果前面是 null 或 undefined，就用后面
+        assistantMessage: msg,
     };
 }
 
@@ -48,6 +50,8 @@ export function parseDeepSeekResponse(
  * @returns 异步的响应结果
  */
 export const runAgent = async (memory: Memory): Promise<string> => {
+    // TODO 加上日志，输出模型的一些信息
+
     const MAX_STEPS = 30; // 循环的最大次数
     let step = 0;
     // Agent 调用循环
@@ -58,6 +62,9 @@ export const runAgent = async (memory: Memory): Promise<string> => {
 
         // 工具调用
         if (action.type === "tool") {
+            // 写入会话记忆
+            memory.add(action.assistantMessage);
+
             // 获取工具
             const tool = toolMap.get(action.toolName);
             if (!tool) {
@@ -85,12 +92,8 @@ export const runAgent = async (memory: Memory): Promise<string> => {
 
         // 最终回复
         if (action.type === "final") {
-            // 最终结果写入会话记忆
-            memory.add({
-                role: "assistant",
-                content: action.content,
-            });
-
+            // 写入会话记忆
+            memory.add(action.assistantMessage);
             return action.content;
         }
     }

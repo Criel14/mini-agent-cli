@@ -37,6 +37,10 @@ export const callLLM = async (
             max_tokens: 8192, // TODO 后续可配置
             tools: toolSchemas,
             tool_choice: "auto",
+            stream: false, // TODO 后续可配置
+            "thinking": {
+                "type": "enabled" // TODO 后续可配置
+            },
             extra_body: {
                 enable_search: false // TODO 后续可配置
             }

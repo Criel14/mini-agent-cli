@@ -30,7 +30,7 @@ export type DeepSeekToolCall = {
 export type DeepSeekAssistantMessage = {
   role: "assistant";
   content: string | null; // 模型回答的内容，如果触发 tool_call，这里是 null
-  reasoning_content?: string; // 推理内容（下一轮对话请求时，不传回去）
+  reasoning_content?: string; // 推理内容
   tool_calls?: DeepSeekToolCall[]; // 工具调用（可能没有，可能多个）
 };
 

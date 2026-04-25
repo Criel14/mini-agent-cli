@@ -9,7 +9,9 @@ const rl = readline.createInterface({
 });
 
 // 创建会话记忆
-const memory = new Memory()
+const memory = new Memory([
+    { role: "system", content: "你是一个简单版本的 claude code 的智能助手，你可以向用户介绍你可以使用的工具" }
+]);
 
 /**
  * 获取用户输入并处理

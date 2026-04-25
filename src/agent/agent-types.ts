@@ -1,3 +1,5 @@
+import type { DeepSeekAssistantMessage } from "../llm/llm-response-types.js";
+
 /**
  * Agent 行为（统一抽象）
  *
@@ -8,8 +10,10 @@ export type AgentAction =
         toolName: string; // 工具名称
         toolArgs: any; // 工具参数（已经 JSON.parse 后）
         toolCallId: string; // tool_call_id（用于回传给模型）
+        assistantMessage: DeepSeekAssistantMessage; // 原始消息
     }
     | {
         type: "final"; // 最终回答
         content: string; // 返回给用户的内容
+        assistantMessage: DeepSeekAssistantMessage; // 原始消息
     };
