@@ -2,6 +2,7 @@ import readline from "node:readline";
 import { runAgent } from "./agent/agent.js";
 import { MemoryStore } from "./memory/memory-store.js";
 import { handlerCommand } from "./commands/command-registry.js";
+import { printAssistant, printError, printSystem, printUserPrompt } from "./ui/printer.js";
 
 // 创建控制台监听
 const rl = readline.createInterface({
@@ -21,7 +22,7 @@ const memoryStore = new MemoryStore([
  * 获取用户输入并处理
  */
 const ask = (): void => {
-    rl.question("[user]:", handleInput);
+    rl.question(printUserPrompt(), handleInput);
 };
 
 /**
@@ -40,7 +41,7 @@ const handleInput = async (input: string): Promise<void> => {
     )
     if (commandResult) {
         if (commandResult.message) {
-            console.log("[system]:", commandResult.message);
+            printSystem(commandResult.message);
         }
 
         if (commandResult.shouldExit) {
@@ -59,9 +60,9 @@ const handleInput = async (input: string): Promise<void> => {
             content: input
         })
         const result = await runAgent(memoryStore);
-        console.log("[llm]:", result);
+        printAssistant(result);
     } catch (err) {
-        console.error("[error]: ", err);
+        printError(err);
     }
 
     // 递归调用，执行下一个问题或命令
