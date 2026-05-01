@@ -3,7 +3,7 @@
  */
 import type { DeepSeekChatCompletionResponse } from "../llm/llm-response-types.js";
 import { callLLM } from "../llm/llm.js";
-import type { Memory } from "../memory/memory.js";
+import type { MemoryStore } from "../memory/memory-store.js";
 import { toolMap } from "../tools/tool-registry.js";
 import type { AgentAction } from "./agent-types.js";
 
@@ -49,7 +49,7 @@ export function parseDeepSeekResponse(
  * @param input 用户输入
  * @returns 异步的响应结果
  */
-export const runAgent = async (memory: Memory): Promise<string> => {
+export const runAgent = async (memoryStore: MemoryStore): Promise<string> => {
     // TODO 加上日志，输出模型的一些信息
 
     const MAX_STEPS = 30; // 循环的最大次数
@@ -57,13 +57,13 @@ export const runAgent = async (memory: Memory): Promise<string> => {
     // Agent 调用循环
     while (true) {
         // 调用 LLM
-        const response = await callLLM(memory);
+        const response = await callLLM(memoryStore);
         const action = parseDeepSeekResponse(response);
 
         // 工具调用
         if (action.type === "tool") {
             // 写入会话记忆
-            memory.add(action.assistantMessage);
+            memoryStore.appendMessage(action.assistantMessage);
 
             // 获取工具
             const tool = toolMap.get(action.toolName);
@@ -75,7 +75,7 @@ export const runAgent = async (memory: Memory): Promise<string> => {
             const toolResult = await tool.impl(action.toolArgs)
 
             // 工具结果写入会话记忆
-            memory.add({
+            memoryStore.appendMessage({
                 role: "tool",
                 content: toolResult,
                 tool_call_id: action.toolCallId,
@@ -93,7 +93,7 @@ export const runAgent = async (memory: Memory): Promise<string> => {
         // 最终回复
         if (action.type === "final") {
             // 写入会话记忆
-            memory.add(action.assistantMessage);
+            memoryStore.appendMessage(action.assistantMessage);
             return action.content;
         }
     }

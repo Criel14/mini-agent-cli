@@ -1,7 +1,6 @@
-import type { Memory } from "../memory/memory.js"
+import type { MemoryStore } from "../memory/memory-store.js";
 import { toolSchemas } from "../tools/tool-registry.js";
 import type { DeepSeekChatCompletionResponse } from "./llm-response-types.js"
-import type { DeepSeekMessage } from "./llm-types.js";
 
 /**
  * 调用 LLM
@@ -10,10 +9,10 @@ import type { DeepSeekMessage } from "./llm-types.js";
  * @returns 
  */
 export const callLLM = async (
-    memory: Memory
+    memoryStore: MemoryStore
 ): Promise<DeepSeekChatCompletionResponse> => {
     // 获取历史消息
-    const messages: DeepSeekMessage[] = memory.getAll();
+    const messages = memoryStore.getCurrentMemory().getAll();
 
     // 读取配置
     const apiKey = process.env.DEEPSEEK_API_KEY;
