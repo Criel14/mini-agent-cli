@@ -1,4 +1,5 @@
 import readline from "node:readline";
+import fs from "node:fs/promises";
 import { runAgent } from "./agent/agent.js";
 import { MemoryStore } from "./memory/memory-store.js";
 import { handlerCommand } from "./commands/command-registry.js";
@@ -10,11 +11,14 @@ const rl = readline.createInterface({
     output: process.stdout,
 });
 
+// 读取系统提示词文件
+const systemPrompt = await fs.readFile("./src/prompts/system-prompt.md", "utf-8");
+
 // 创建会话记忆
 const memoryStore = new MemoryStore([
     {
         role: "system",
-        content: "你是一个简单版本的 claude code 的智能助手，你可以向用户介绍你可以使用的工具"
+        content: systemPrompt
     }
 ]);
 
@@ -53,14 +57,18 @@ const handleInput = async (input: string): Promise<void> => {
         return;
     }
 
-    // 执行 agent，打印响应结果
     try {
+        // 记忆用户输入
         memoryStore.appendMessage({
             role: "user",
             content: input
         })
+
+        // 执行 agent，打印响应结果
         const result = await runAgent(memoryStore);
-        printAssistant(result);
+        printAssistant(result.content);
+        const usage = result.usage;
+        printSystem(`本轮对话：总 token = ${usage.total_tokens}, 输入 token = ${usage.prompt_tokens}, 输出 token = ${usage.completion_tokens}`)
     } catch (err) {
         printError(err);
     }
