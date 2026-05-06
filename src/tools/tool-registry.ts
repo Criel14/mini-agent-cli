@@ -1,6 +1,7 @@
 import type { DeepSeekToolDefinition } from "../llm/llm-request-types.js";
 import { readFileTool } from "./read-file.js";
 import type { DeepSeekTool } from "./tool-types.js";
+import { writeFileTool } from "./write-file.js";
 /**
  * 统一导出工具列表
  */
@@ -8,7 +9,7 @@ import type { DeepSeekTool } from "./tool-types.js";
 /**
  * 工具列表
  */
-export const toolList: DeepSeekTool[] = [readFileTool];
+export const toolList: DeepSeekTool[] = [readFileTool, writeFileTool];
 
 /**
  * Map<工具名，工具定义>，用于快速查找工具
