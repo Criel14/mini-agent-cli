@@ -1,3 +1,4 @@
+import { printSystem } from "../ui/printer.js";
 import type { DeepSeekTool } from "./tool-types.js";
 import fs from "node:fs/promises";
 /**
@@ -27,8 +28,16 @@ const readFileHandler = async (
     try {
         // 使用 Node.js 的 fs.readFile 读取文件（不阻塞线程）
         const content = await fs.readFile(path, { encoding });
+
+        // 打印日志
+        printSystem(`【read_file】用 ${encoding} 编码，读取了 ${path} 文件`)
+
         return content;
     } catch (err: any) {
+
+        // 打印日志
+        printSystem(`【read_file】用 ${encoding} 编码，读取 ${path} 文件失败: ${err.message}`)
+
         return `读取文件失败: ${err.message}`;
     }
 };

@@ -1,6 +1,7 @@
 import fs from "node:fs/promises";
 import path from "node:path";
 import type { DeepSeekTool } from "./tool-types.js";
+import { printSystem } from "../ui/printer.js";
 
 /**
  * 此工具函数的参数
@@ -46,8 +47,15 @@ const writeFileHandler = async (
         }
 
         await fs.writeFile(filePath, content, { encoding });
+
+        // 打印日志
+        printSystem(`【write_file】写入了文件 ${filePath}`)
+
         return `写入文件成功: ${filePath}`;
     } catch (err: any) {
+        // 打印日志
+        printSystem(`【write_file】尝试写入文件 ${filePath} 失败: ${err.message}`)
+
         return `写入文件失败: ${err.message}`;
     }
 };
