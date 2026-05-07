@@ -1,5 +1,6 @@
 import type { MemoryStore } from "../memory/memory-store.js";
 import { toolSchemas } from "../tools/tool-registry.js";
+import { llmConfig } from "./llm-config.js";
 import type { DeepSeekChatCompletionResponse } from "./llm-response-types.js"
 
 /**
@@ -14,26 +15,22 @@ export const callLLM = async (
     // 获取历史消息
     const messages = memoryStore.getCurrentMemory().getAll();
 
-    // 读取配置
-    const apiKey = process.env.DEEPSEEK_API_KEY;
-    const baseUrl = process.env.DEEPSEEK_BASE_URL ?? "https://api.deepseek.com";
-    const model = process.env.DEEPSEEK_MODEL ?? "deepseek-v4-flash";
-
-    if (!apiKey) {
+    if (!llmConfig.apiKey) {
         throw new Error("缺少 DEEPSEEK_API_KEY");
     }
+
     // 发起请求
-    const response = await fetch(`${baseUrl}/chat/completions`, {
+    const response = await fetch(`${llmConfig.baseUrl}/chat/completions`, {
         method: "POST",
         headers: {
             "Content-Type": "application/json",
-            "Authorization": `Bearer ${apiKey}`,
+            "Authorization": `Bearer ${llmConfig.apiKey}`,
         },
         body: JSON.stringify({
-            model,
+            model: llmConfig.model,
             messages,
-            temperature: 0.7, // TODO 后续可配置
-            max_tokens: 8192, // TODO 后续可配置
+            temperature: llmConfig.temperature,
+            max_tokens: llmConfig.maxTokens,
             tools: toolSchemas,
             tool_choice: "auto",
             stream: false, // TODO 后续可配置
