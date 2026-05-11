@@ -5,7 +5,7 @@ import type { DeepSeekChatCompletionResponse } from "../llm/llm-response-types.j
 import { callLLM } from "../llm/llm.js";
 import type { MemoryStore } from "../memory/memory-store.js";
 import { toolMap } from "../tools/tool-registry.js";
-import { printSystem } from "../ui/printer.js";
+import { printError, printSystem } from "../ui/printer.js";
 import type { AgentAction, AgentResult } from "./agent-types.js";
 
 
@@ -76,16 +76,25 @@ export const runAgent = async (memoryStore: MemoryStore): Promise<AgentResult> =
 
             // 打印信息
             printSystem(`触发工具调用：${tool.name}`)
-            
-            // 调用工具
-            const toolResult = await tool.impl(action.toolArgs)
 
-            // 工具结果写入会话记忆
-            memoryStore.appendMessage({
-                role: "tool",
-                content: toolResult,
-                tool_call_id: action.toolCallId,
-            });
+            // 调用工具
+            try {
+                const toolResult = await tool.impl(action.toolArgs)
+                // 工具结果写入会话记忆
+                memoryStore.appendMessage({
+                    role: "tool",
+                    content: toolResult,
+                    tool_call_id: action.toolCallId,
+                });
+            } catch (err) {
+                printError(err);
+                // 错误信息写入会话记忆
+                memoryStore.appendMessage({
+                    role: "tool",
+                    content: `${err}`, // 这里比较随意，就先这样
+                    tool_call_id: action.toolCallId,
+                });
+            }
 
             // 限制循环的最大次数
             step++;
