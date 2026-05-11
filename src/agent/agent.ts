@@ -224,7 +224,10 @@ export const runAgentStream = async (memoryStore: MemoryStore): Promise<AgentRes
                 if (!tool) {
                     throw new Error(`未知工具: ${toolCall.function.name}`);
                 }
-                printAssistantStreamEnd();
+                // 这里因为要输出系统提示，所以要结束模型输出打印
+                if (hasPrintedAssistant) {
+                    printAssistantStreamEnd();
+                }
                 printSystem(`触发工具调用：${tool.name}`);
 
                 try {

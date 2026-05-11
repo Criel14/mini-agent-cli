@@ -45,47 +45,50 @@ const runtimeConfig = {
  * @param input 用户输入的文本
  */
 const handleInput = async (input: string): Promise<void> => {
-    // 处理斜杠命令
-    const commandResult = await handlerCommand(
-        input,
-        {
-            memoryStore,
-            close: () => rl.close(),
-            runtimeConfig,
-        }
-    )
-    if (commandResult) {
-        if (commandResult.message) {
-            printSystem(commandResult.message);
-        }
-        if (commandResult.shouldExit) {
+    // 处理空输入
+    if (input) {
+        // 处理斜杠命令
+        const commandResult = await handlerCommand(
+            input,
+            {
+                memoryStore,
+                close: () => rl.close(),
+                runtimeConfig,
+            }
+        )
+        if (commandResult) {
+            if (commandResult.message) {
+                printSystem(commandResult.message);
+            }
+            if (commandResult.shouldExit) {
+                return;
+            }
+            // 递归调用，执行下一个问题或命令
+            ask();
             return;
         }
-        // 递归调用，执行下一个问题或命令
-        ask();
-        return;
-    }
 
-    try {
-        // 记忆用户输入
-        memoryStore.appendMessage({
-            role: "user",
-            content: input
-        })
+        try {
+            // 记忆用户输入
+            memoryStore.appendMessage({
+                role: "user",
+                content: input
+            })
 
-        // 执行 agent，打印响应结果
-        let result;
-        if (runtimeConfig.stream) {
-            result = await runAgentStream(memoryStore);
-        } else {
-            result = await runAgent(memoryStore);
-            printAssistant(result.content);
+            // 执行 agent，打印响应结果
+            let result;
+            if (runtimeConfig.stream) {
+                result = await runAgentStream(memoryStore);
+            } else {
+                result = await runAgent(memoryStore);
+                printAssistant(result.content);
+            }
+            const usage = result.usage;
+            printSystem(`本轮对话：总 token = ${usage.total_tokens}, 输入 token = ${usage.prompt_tokens}, 输出 token = ${usage.completion_tokens}`)
+
+        } catch (err) {
+            printError(err);
         }
-        const usage = result.usage;
-        printSystem(`本轮对话：总 token = ${usage.total_tokens}, 输入 token = ${usage.prompt_tokens}, 输出 token = ${usage.completion_tokens}`)
-    
-    } catch (err) {
-        printError(err);
     }
 
     // 递归调用，执行下一个问题或命令
