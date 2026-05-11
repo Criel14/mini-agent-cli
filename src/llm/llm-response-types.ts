@@ -25,6 +25,21 @@ export type DeepSeekToolCall = {
 };
 
 /**
+ * 流式输出时的工具调用增量数据
+ * 
+ * 相比 DeepSeekToolCall 多了 index，并且返回的内容片段可能包含空值
+ */
+export type DeepSeekStreamToolCallDelta = {
+  index?: number;
+  id?: string;
+  type?: "function";
+  function?: {
+    name?: string;
+    arguments?: string;
+  };
+};
+
+/**
  * llm 返回的 assistant 角色消息
  */
 export type DeepSeekAssistantMessage = {
@@ -49,6 +64,22 @@ export type DeepSeekChoice = {
    */
   finish_reason: "stop" | "length" | "tool_calls";
 };
+
+/**
+ * 流式输出中的一个 choice
+ */
+export type DeepSeekStreamChoice = {
+  index: number;
+
+  // 增量数据
+  delta: {
+    content?: string; // 内容增量
+    reasoning_content?: string; // 推理增量
+    tool_calls?: Partial<DeepSeekStreamToolCallDelta>[]; // 工具调用增量，这里 Partial 将所有字段变为可选，因为流式返回是不完整的
+  };
+
+  finish_reason?: "stop" | "length" | "tool_calls"; // 结束原因
+}
 
 /**
  * token 使用统计
@@ -82,17 +113,6 @@ export type DeepSeekStreamChunk = {
   object: "chat.completion.chunk"; // 固定值
   created: number; // 创建时间（Unix 时间戳，秒）
   model: string; // 模型名称
-
-  choices: {
-    index: number;
-
-    // 增量数据
-    delta: {
-      content?: string; // 内容增量
-      reasoning_content?: string; // 推理增量
-      tool_calls?: Partial<DeepSeekToolCall>[]; // 工具调用增量，这里 Partial 将所有字段变为可选，因为流式返回是不完整的
-    };
-
-    finish_reason?: "stop" | "length" | "tool_calls"; // 结束原因
-  }[];
+  choices: DeepSeekStreamChoice[];
+  usage?: DeepSeekUsage | null; // 开启 include_usage 时，最后一个 chunk 会带 usage
 };

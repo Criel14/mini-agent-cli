@@ -6,6 +6,7 @@ import type { DeepSeekToolCall } from "./llm-response-types.js";
 export type DeepSeekMessage = {
   role: "system" | "user" | "assistant" | "tool"; // 角色
   content: string | null; // system 或 user 或 assistant 的内容
+  reasoning_content?: string | null; // 推理内容
   tool_calls?: DeepSeekToolCall[] | undefined; // 工具调用，assistant 角色返回需要调用的工具
   tool_call_id?: string | undefined; // 工具调用 ID，tool 角色需要使用
 };

@@ -1,6 +1,6 @@
 import readline from "node:readline";
 import fs from "node:fs/promises";
-import { runAgent } from "./agent/agent.js";
+import { runAgent, runAgentStream } from "./agent/agent.js";
 import { MemoryStore } from "./memory/memory-store.js";
 import { handlerCommand } from "./commands/command-registry.js";
 import { printAssistant, printError, printSystem, printUserPrompt } from "./ui/printer.js";
@@ -30,6 +30,16 @@ const ask = (): void => {
 };
 
 /**
+ * 运行时配置
+ * 
+ * 默认流式输出
+ */
+const runtimeConfig = {
+    stream: true,
+};
+
+
+/**
  * 处理用户输入
  * 
  * @param input 用户输入的文本
@@ -41,17 +51,16 @@ const handleInput = async (input: string): Promise<void> => {
         {
             memoryStore,
             close: () => rl.close(),
+            runtimeConfig,
         }
     )
     if (commandResult) {
         if (commandResult.message) {
             printSystem(commandResult.message);
         }
-
         if (commandResult.shouldExit) {
             return;
         }
-
         // 递归调用，执行下一个问题或命令
         ask();
         return;
@@ -65,10 +74,16 @@ const handleInput = async (input: string): Promise<void> => {
         })
 
         // 执行 agent，打印响应结果
-        const result = await runAgent(memoryStore);
-        printAssistant(result.content);
+        let result;
+        if (runtimeConfig.stream) {
+            result = await runAgentStream(memoryStore);
+        } else {
+            result = await runAgent(memoryStore);
+            printAssistant(result.content);
+        }
         const usage = result.usage;
         printSystem(`本轮对话：总 token = ${usage.total_tokens}, 输入 token = ${usage.prompt_tokens}, 输出 token = ${usage.completion_tokens}`)
+    
     } catch (err) {
         printError(err);
     }

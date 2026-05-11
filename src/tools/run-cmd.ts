@@ -1,7 +1,7 @@
 import { execFile } from "node:child_process";
 import { promisify } from "node:util";
 import type { DeepSeekTool } from "./tool-types.js";
-import { printSystem } from "../ui/printer.js";
+import { printTool } from "../ui/printer.js";
 
 /**
  * 将 Node.js 回调风格的 execFile 转成 Promise 风格。
@@ -71,7 +71,7 @@ const runCmdHandler = async (
         const stderr = result.stderr?.toString() ?? "";
 
         // 打印日志
-        printSystem(`【run_cmd】执行了命令: ${command}`)
+        printTool("run_cmd", `执行命令: ${command}`)
 
         return [
             `命令执行成功: ${command}`,
@@ -81,7 +81,7 @@ const runCmdHandler = async (
     } catch (err: any) {
 
         // 打印日志
-        printSystem(`【run_cmd】执行命令 ${command} 失败`)
+        printTool("run_cmd", `执行命令失败: ${command}`)
 
         return [
             `命令执行失败: ${command}`,

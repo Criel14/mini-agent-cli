@@ -1,11 +1,12 @@
 import type { CommandContext, CommandResult } from "./command-types.js";
 import { exitCommand } from "./slash/exit.js";
 import { newCommand } from "./slash/new.js";
+import { streamCommand } from "./slash/stream.js";
 
 /**
  * 获取所有命令
  */
-const commandList = [exitCommand, newCommand];
+const commandList = [exitCommand, newCommand, streamCommand];
 
 /**
  * 构造 Map<命令名称，命令>
@@ -33,7 +34,7 @@ export const handlerCommand = async (
             message: "命令格式有误，应为: /命令名称 参数1 参数2",
         };
     }
-    
+
     const command = commandMap.get(commandName);
 
     if (!command) {

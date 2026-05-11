@@ -15,6 +15,7 @@ const color = {
     green: "\x1b[32m",
     red: "\x1b[31m",
     yellow: "\x1b[33m",
+    magenta: "\x1b[35m",
 };
 
 /**
@@ -37,10 +38,8 @@ function withColor(text: string, ansiColor: string): string {
  *
  */
 function printBlock(label: string, message: string, labelColor: string): void {
-    console.log();
     console.log(withColor(label, labelColor));
     console.log(message);
-    console.log();
 }
 
 /**
@@ -58,11 +57,22 @@ export function printAssistant(message: string): void {
 }
 
 /**
+ * 打印工具消息
+ *
+ * @param toolName 工具名称，例如 read_file、write_file、run_cmd
+ * @param message 工具相关的信息，例如触发工具、执行成功、执行失败等
+ */
+export function printTool(toolName: string, message: string): void {
+    printBlock(`[tool:${toolName}]`, message, color.magenta);
+}
+
+
+/**
  * 返回用户输入提示符
  * readline.question 需要一个字符串作为提示，所以这里不直接 console.log
  */
 export function printUserPrompt(): string {
-    return `${withColor("you:", color.blue)} `;
+    return `${withColor("[user]\n>", color.blue)} `;
 }
 
 /**
@@ -93,4 +103,25 @@ export function printWarning(message: string): void {
  */
 export function printInfo(message: string): void {
     printBlock("info", message, color.gray);
+}
+
+/**
+ * 开始打印 assistant 流式回复
+ */
+export function printAssistantStreamStart(): void {
+    console.log(withColor("[assistant]", color.green));
+}
+
+/**
+ * 打印 assistant 的一个增量片段
+ */
+export function printAssistantDelta(text: string): void {
+    process.stdout.write(text); // 不会自动换行
+}
+
+/**
+ * 结束 assistant 流式输出打印
+ */
+export function printAssistantStreamEnd(): void {
+    console.log();
 }

@@ -1,11 +1,20 @@
 import type { MemoryStore } from "../memory/memory-store.js";
 
 /**
+ * CLI 运行时配置
+ */
+export type RuntimeConfig = {
+    stream: boolean; // 是否使用流式输出
+};
+
+
+/**
  * 命令的上下文信息
  */
 export type CommandContext = {
     memoryStore: MemoryStore; // 会话记忆存储
     close: () => void; // 需要传递 readline 的关闭函数
+    runtimeConfig: RuntimeConfig; // 运行时配置
 }
 
 /**
